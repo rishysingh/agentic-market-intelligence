@@ -1,0 +1,17 @@
+{
+  "deployed_at": "2026-10-28T02:35:28.830170+00:00",
+  "gcp_project_id": "qwiklabs-gcp-03-c81d344a3430",
+  "region": "us-central1",
+  "backend_service": "ami-backend",
+  "backend_url": "https://ami-backend-rjsocoruqq-uc.a.run.app",
+  "frontend_service": "ami-frontend",
+  "frontend_url": "https://ami-frontend-rjsocoruqq-uc.a.run.app",
+  "ingestion_job": "ami-ingestion-job",
+  "scheduler_job": "ami-daily-market-refresh",
+  "verification": {
+    "backend_health_status": "HEALTHY",
+    "market_regime": null,
+    "frontend_http_status": 200,
+    "frontend_proxy_health_status": "HEALTHY"
+  }
+}

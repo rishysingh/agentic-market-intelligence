@@ -1,0 +1,91 @@
+name: Deploy to Google Cloud Run (WIF & Approval Gate)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target deployment environment (dev or prod)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID || 'qwiklabs-gcp-03-c81d344a3430' }}
+  GCP_REGION: ${{ vars.GCP_REGION || 'us-central1' }}
+  GAR_REPO: ami-repo
+
+jobs:
+  deploy:
+    name: Build, Scan & Deploy (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud via Workload Identity Federation (No Keys)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build & Push Backend Container
+        run: |
+          IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/ami-backend:${{ github.sha }}"
+          docker build -f Dockerfile.backend -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+
+      - name: Deploy Tier 2 Backend API & Agent Service to Cloud Run
+        run: |
+          IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/ami-backend:${{ github.sha }}"
+          gcloud run deploy ami-backend \
+            --project="${{ env.GCP_PROJECT_ID }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --image="$IMAGE_URI" \
+            --service-account="ami-backend-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
+            --set-env-vars="GOOGLE_CLOUD_PROJECT=${{ env.GCP_PROJECT_ID }},GOOGLE_CLOUD_LOCATION=${{ env.GCP_REGION }},BQ_DATASET_ID=market_intelligence,ENVIRONMENT=${{ inputs.environment }}" \
+            --max-instances=4 \
+            --memory=2Gi \
+            --cpu=2 \
+            --timeout=120s \
+            --allow-unauthenticated
+
+      - name: Build & Push Frontend Container
+        run: |
+          BACKEND_URL=$(gcloud run services describe ami-backend --project="${{ env.GCP_PROJECT_ID }}" --region="${{ env.GCP_REGION }}" --format="value(status.url)")
+          FE_IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/ami-frontend:${{ github.sha }}"
+          docker build \
+            --build-arg NEXT_PUBLIC_API_BASE_URL="$BACKEND_URL" \
+            -f apps/frontend/Dockerfile \
+            -t "$FE_IMAGE_URI" \
+            apps/frontend
+          docker push "$FE_IMAGE_URI"
+
+      - name: Deploy Tier 1 Frontend Terminal to Cloud Run
+        run: |
+          BACKEND_URL=$(gcloud run services describe ami-backend --project="${{ env.GCP_PROJECT_ID }}" --region="${{ env.GCP_REGION }}" --format="value(status.url)")
+          FE_IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPO }}/ami-frontend:${{ github.sha }}"
+          gcloud run deploy ami-frontend \
+            --project="${{ env.GCP_PROJECT_ID }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --image="$FE_IMAGE_URI" \
+            --service-account="ami-frontend-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
+            --set-env-vars="BACKEND_INTERNAL_URL=${BACKEND_URL},NEXT_PUBLIC_API_BASE_URL=${BACKEND_URL},NEXT_PUBLIC_APP_ENV=${{ inputs.environment }}" \
+            --max-instances=3 \
+            --memory=1Gi \
+            --cpu=1 \
+            --port=8080 \
+            --allow-unauthenticated

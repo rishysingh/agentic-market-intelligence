@@ -1,0 +1,11 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'Dockerfile.backend'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/qwiklabs-gcp-03-c81d344a3430/ami-repo/ami-backend:latest'
+      - '.'
+images:
+  - 'us-central1-docker.pkg.dev/qwiklabs-gcp-03-c81d344a3430/ami-repo/ami-backend:latest'

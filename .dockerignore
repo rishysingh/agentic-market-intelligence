@@ -1,0 +1,12 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+apps/frontend/node_modules
+apps/frontend/.next
+.terraform
+*.tfstate*
+.env
+.DS_Store

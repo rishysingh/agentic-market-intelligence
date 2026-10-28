@@ -1,0 +1,71 @@
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node / Next.js Frontend
+node_modules/
+apps/frontend/node_modules/
+apps/frontend/.next/
+apps/frontend/out/
+apps/frontend/build/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment & Secrets (NEVER commit real secrets or service account keys)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*service-account*.json
+*credentials*.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Data & Model Artifacts (Large local caches)
+*.parquet
+*.pkl
+*.joblib
+*.h5
+*.onnx
+data/cache/*
+!data/cache/latest_snapshot.json
+!data/cache/deployment_manifest.json
+models/artifacts/*.bin
+
+# OS & Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

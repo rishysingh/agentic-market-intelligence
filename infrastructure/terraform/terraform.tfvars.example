@@ -1,0 +1,8 @@
+project_id           = "qwiklabs-gcp-03-c81d344a3430"
+region               = "us-central1"
+environment          = "dev"
+bq_dataset_id        = "market_intelligence"
+github_owner         = "rishysingh"
+github_repo          = "agentic-market-intelligence"
+adk_root_model       = "gemini-2.5-pro"
+adk_specialist_model = "gemini-2.5-flash"

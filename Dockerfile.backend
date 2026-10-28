@@ -1,0 +1,31 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PORT=8080
+
+WORKDIR /app
+
+# Create non-root runtime user for security compliance
+RUN groupadd -r ami && useradd -r -g ami ami
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /app/requirements.txt
+
+COPY orchestration /app/orchestration
+COPY mcp /app/mcp
+COPY data /app/data
+COPY models /app/models
+COPY services /app/services
+
+RUN chown -R ami:ami /app
+USER ami
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/v1/health')" || exit 1
+
+CMD ["uvicorn", "services.api.main:app", "--host", "0.0.0.0", "--port", "8080"]
