@@ -1,0 +1,31 @@
+# Project Status & Deployment Verification: Agentic Market Intelligence Platform
+
+- [x] **Phase 1: Environment Discovery, Resource Plan & Architecture Specification**
+  - [x] Inspect GCP authentication, active project (`qwiklabs-gcp-03-c81d344a3430`), billing, enabled APIs, IAM roles, and existing resources
+  - [x] Inspect GitHub authentication (`rishysingh`), repository inventory, and local toolchain
+  - [x] Produce [Phase 1 Architecture, Resource & Cost Plan](file:///Users/rishysingh/.gemini/antigravity/brain/756ce53a-a2fe-4bcd-b3d8-ad2b9a04d2b6/phase1_architecture_and_discovery.md)
+  - [x] Obtain user approval for resource provisioning, service enablement, and GitHub repository creation
+- [x] **Phase 2: Repository Creation, Cloud Foundation & IaC**
+  - [x] Initialize local monorepo `/Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence` and push to dedicated GitHub repository [`rishysingh/agentic-market-intelligence`](https://github.com/rishysingh/agentic-market-intelligence)
+  - [x] Create Terraform IaC (`infrastructure/terraform/`) and CI/CD pipelines (`infrastructure/ci-workflows/`)
+  - [x] Provision least-privilege service accounts (`ami-frontend-sa`, `ami-backend-sa`, `ami-ingestion-sa`, `ami-scheduler-sa`), Artifact Registry (`ami-repo`), Secret Manager (`ami-api-auth-token`), Pub/Sub (`ami-refresh-triggers`), and BigQuery dataset (`market_intelligence`) with all **13 partitioned and clustered tables**
+- [x] **Phase 3: Data Platform, Ingestion Pipeline & Point-in-Time Feature Store**
+  - [x] Implement market OHLCV, SEC EDGAR XBRL fundamentals, corporate filings, and FRED macroeconomic ingestion ([pipeline.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/data/ingestion/pipeline.py))
+  - [x] Implement point-in-time feature store (`v1.0-pit`, 18 features) with strict `filing_date <= trade_date` anti-leakage gating ([engineer.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/data/features/engineer.py))
+  - [x] Load all 13 tables into BigQuery `qwiklabs-gcp-03-c81d344a3430.market_intelligence`
+- [x] **Phase 4: Controlled Internal MCP Servers & Guardrails**
+  - [x] Implement per-agent tool allowlists (`AGENT_TOOL_ALLOWLIST`), read-only SQL validator (`validate_readonly_sql`), and prompt-injection sanitizer ([security.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/mcp/security.py))
+  - [x] Implement BigQuery Read-Only MCP Server ([mcp/bigquery/server.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/mcp/bigquery/server.py)), Market Data MCP Server ([mcp/market_data/server.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/mcp/market_data/server.py)), and Grounded News & SEC EDGAR MCP Server ([mcp/research/server.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/mcp/research/server.py))
+- [x] **Phase 5: Quantitative Forecasting & Net-of-Cost Walk-Forward Backtesting**
+  - [x] Train and Platt-calibrate `1d`, `5d`, and `20d` walk-forward probabilistic models ([pipeline.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/models/training/pipeline.py))
+  - [x] Execute net-of-cost (`10 bps` cost + `5 bps` slippage) walk-forward backtests against `SPY` buy-and-hold and 20d momentum baselines ([engine.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/models/backtesting/engine.py))
+- [x] **Phase 6: Hierarchical Agent System, FastAPI Backend & Next.js TypeScript Terminal**
+  - [x] Implement Root Agent ([services/root_agent/agent.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/services/root_agent/agent.py)) using `google-adk`, Dynamic Bounded Orchestrator ([services/orchestrator/engine.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/services/orchestrator/engine.py)), and all **11 Specialized Agents** ([services/agents/specialists.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/services/agents/specialists.py))
+  - [x] Implement Tier 2 FastAPI service ([services/api/main.py](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/services/api/main.py)) and Tier 1 Next.js 14 TypeScript Research Terminal ([apps/frontend/src/pages/index.tsx](file:///Users/rishysingh/.gemini/antigravity/scratch/agentic-market-intelligence/apps/frontend/src/pages/index.tsx))
+- [x] **Phase 7: Automated Testing & Security Verification**
+  - [x] Execute unit, security, integration, and end-to-end tests (`18/18 tests passing in 1.05s`)
+- [x] **Phase 8: Cloud Run Deployment, Live Endpoint Verification & Documentation**
+  - [x] Deploy Tier 2 Backend (`ami-backend`): `https://ami-backend-rjsocoruqq-uc.a.run.app` (`HEALTHY`)
+  - [x] Deploy Tier 1 Frontend (`ami-frontend`): `https://ami-frontend-rjsocoruqq-uc.a.run.app` (`HTTP 200`, Proxy `HEALTHY`)
+  - [x] Deploy Tier 3 Scheduled Cloud Run Job (`ami-ingestion-job`) and Cloud Scheduler (`ami-daily-market-refresh`)
+  - [x] Publish comprehensive documentation (`README.md`, `docs/`) and push to GitHub `main`
